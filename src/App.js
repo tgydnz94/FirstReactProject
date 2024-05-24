@@ -1,36 +1,59 @@
-import React from "react";
+import React, { Component } from "react";
 import Navi from "./Navi";
 import CategoryList from "./CategoryList";
 import ProductList from "./ProductList";
 import { Col, Container, Row } from "reactstrap";
 
-function App() {
-  let categoryInfo = {title: "Category List"}
-  let productInfo = {title: "Product List"}
+export default class App extends Component {
+  state = {
+    currentCategory: "",
+    products: []
+  };
 
-  return (
-    <div className="App">
-      <div>
-        <Container>
-          <Row>
+  componentDidMount(){
+    this.getProducts();
+  }
+
+  changeCategory = (category) => {
+    this.setState({ currentCategory: category.categoryName });
+  };
+
+  getProducts = () => {
+    fetch("http://localhost:3000/products")
+      .then((response) => response.json())
+      .then((data) => this.setState({ products: data }));
+  };
+
+  render() {
+    let categoryInfo = { title: "Category List" };
+    let productInfo = { title: "Product List" };
+    return (
+      <div className="App">
+        <div>
+          <Container>
+            <Row>
               <Navi></Navi>
-          </Row>
+            </Row>
 
-          <Row>
-            <Col xs="3">
-            <CategoryList info={categoryInfo}></CategoryList>
-            </Col>
+            <Row>
+              <Col xs="3">
+                <CategoryList
+                  currentCategory={this.state.currentCategory}
+                  changeCategory={this.changeCategory}
+                  info={categoryInfo}
+                ></CategoryList>
+              </Col>
 
-            <Col xs="9">
-            <ProductList info={productInfo}></ProductList>
-            </Col>          
-          </Row>
-        </Container>
-
-
+              <Col xs="9">
+                <ProductList 
+                products={this.state.products}
+                currentCategory={this.state.currentCategory}
+                info={productInfo}></ProductList>
+              </Col>
+            </Row>
+          </Container>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
-
-export default App;
