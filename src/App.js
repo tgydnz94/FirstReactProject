@@ -4,12 +4,17 @@ import CategoryList from "./CategoryList";
 import ProductList from "./ProductList";
 import { Col, Container, Row } from "reactstrap";
 import alertify from "alertifyjs";
+import { Route, Switch } from "react-router-dom";
+import CartList from "./CartList";
+import NotFound from "./NotFound";
+import FormDemo1 from "./FormDemo1";
+import FormDemo2 from "./FormDemo2";
 
 export default class App extends Component {
   state = {
     currentCategory: "",
     products: [],
-    cart: []
+    cart: [],
   };
 
   componentDidMount() {
@@ -18,7 +23,6 @@ export default class App extends Component {
 
   changeCategory = (category) => {
     this.setState({ currentCategory: category.categoryName });
-    console.log(category);
     this.getProducts(category.id);
   };
 
@@ -34,57 +38,78 @@ export default class App extends Component {
       .then((data) => this.setState({ products: data }));
   };
 
-  addToCart = (product) =>{
+  addToCart = (product) => {
     let newCart = this.state.cart;
-    var addedItem = newCart.find(c=> c.product.id===product.id);
-    if(addedItem){
-      addedItem.quantity+=1;
-    }
-    else{
-      newCart.push({product:product,quantity:1});
+    var addedItem = newCart.find((c) => c.product.id === product.id);
+    if (addedItem) {
+      addedItem.quantity += 1;
+    } else {
+      newCart.push({ product: product, quantity: 1 });
     }
 
-    this.setState({cart:newCart});
-    alertify.success(product.productName + "added to cart",3);
-  }
+    this.setState({ cart: newCart });
+    alertify.success(product.productName + "added to cart", 3);
+  };
 
-  removeFromCart=(product) => {
-let newCart = this.state.cart.filter(c=> c.product.id!==product.id)
-this.setState({cart:newCart})
-  }
+  removeFromCart = (product) => {
+    let newCart = this.state.cart.filter((c) => c.product.id !== product.id);
+    this.setState({ cart: newCart });
+    alertify.error(product.productName + " removed from cart!");
+  };
 
   render() {
     let categoryInfo = { title: "Category List" };
     let productInfo = { title: "Product List" };
     return (
-      <div className="App">
-        <div>
-          <Container>
-            <Navi
+      <div>
+        <Container>
+          <Navi
             cart={this.state.cart}
             removeFromCart={this.removeFromCart}
-            ></Navi>
+          ></Navi>
 
-            <Row>
-              <Col xs="3">
-                <CategoryList
-                  currentCategory={this.state.currentCategory}
-                  changeCategory={this.changeCategory}
-                  info={categoryInfo}
-                ></CategoryList>
-              </Col>
+          <Row>
+            <Col xs="3">
+              <CategoryList
+                currentCategory={this.state.currentCategory}
+                changeCategory={this.changeCategory}
+                info={categoryInfo}
+              ></CategoryList>
+            </Col>
 
-              <Col xs="9">
-                <ProductList
-                  products={this.state.products}
-                  addToCart={this.addToCart}
-                  currentCategory={this.state.currentCategory}
-                  info={productInfo}
-                ></ProductList>
-              </Col>
-            </Row>
-          </Container>
-        </div>
+            <Col xs="9">
+              <Switch>
+                <Route
+                  exact
+                  path="/"
+                  render={(props) => (
+                    <ProductList
+                      {...props}
+                      products={this.state.products}
+                      addToCart={this.addToCart}
+                      currentCategory={this.state.currentCategory}
+                      info={productInfo}
+                    ></ProductList>
+                  )}
+                />
+                <Route
+                  exact
+                  path="/cart"
+                  render={(props) => (
+                    <CartList
+                      {...props}
+                      cart={this.state.cart}
+                      removeFromCart={this.removeFromCart}
+                    />
+                  )}
+                />
+                <Route path="/form1" component={FormDemo1} />
+                <Route path="/form2" component={FormDemo2} />
+                <Route component={NotFound} />
+              </Switch>
+            </Col>
+          </Row>
+        </Container>
       </div>
     );
   }
